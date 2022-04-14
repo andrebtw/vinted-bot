@@ -1,3 +1,5 @@
+from ast import arg
+import numbers
 import discord
 from discord.ext import commands
 import platform
@@ -9,7 +11,11 @@ import time
 import os
 import json
 import requests
-import asyncio
+from re import I
+from pyVinted import Vinted
+
+vinted = Vinted("fr")
+
 
 intents = discord.Intents.all()
 intents.members = True
@@ -64,6 +70,62 @@ async def bot_info(ctx):
     
     await ctx.respond(embed=info)
 
-    
+@client.slash_command(
+    name = "vinted",
+    description= "Search on Vinted.",
+    guild_ids = [960288719871569961]
+)
+async def vinted_search(ctx, price: int):
+    number_of_items = 10
+    page = 1
 
-client.run("")
+    # search (url, number of items, page_number)
+    items = vinted.items.search("https://www.vinted.fr/femmes?order=newest_first&price_to=9999&currency=EUR", 10, 1)
+
+    # returns a list of objects : item
+    item1 = items[0]
+
+    # title
+    item1.title
+
+    # id
+    item1.id
+
+    # photo url
+    item1.photo
+
+    # brand title
+    item1.brand_title
+
+    # price
+    item1.price
+
+    # url
+    item1.url
+
+    # currency
+    item1.currency
+
+    # Getting all the 10 items into a list
+    items_d = []
+    for i in items:
+        items_d.append(i)
+
+
+    # Reply
+    value = random.randint(0, 0xffffff)
+
+    info = discord.Embed(
+    colour = value
+    )
+
+    info.set_author(name="Vinted Results")
+    info.set_thumbnail(url=item1.photo)
+    info.add_field(name="Item title", value=item1.title)
+    info.set_footer(text=f'Requested by {ctx.author}')
+    
+    await ctx.respond(embed=info)
+
+token = open("token.txt", "r")
+
+client.run(token.read())
