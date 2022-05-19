@@ -2,6 +2,7 @@ from ast import arg
 import numbers
 import discord
 from discord.ext import commands
+from discord.commands import Option
 import platform
 import psutil
 import uptime
@@ -72,18 +73,35 @@ async def bot_info(ctx):
 
 @client.slash_command(
     name = "vinted",
-    description= "Search on Vinted. (A test command yet)",
+    description= "Rechercher sur Vinted. (Une commande test)",
     guild_ids = [960288719871569961]
 )
-async def vinted_search(ctx, price: int):
-    number_of_items = 10
+async def vinted_search(
+                            ctx,
+                            price: Option(int, "Le prix maximum", required = False, default = 500),
+                            arg1: Option(str, "Option 1", required = False, default=""),
+                            arg2: Option(str, "Option 2", required = False, default="")
+                        ):
+    number_of_items = 40
     page = 1
 
     # search (url, number of items, page_number)
-    items = vinted.items.search("https://www.vinted.fr/hommes?order=newest_first&price_to=9999&currency=EUR", number_of_items, page)
+    items = vinted.items.search(f"https://www.vinted.fr/?order=newest_first&price_to={price}&currency=EUR", number_of_items, page)
 
     # returns a list of objects : item
-    item1 = items[0]
+
+    # Getting all the 10 items into a list
+    items_d = []
+    for i in items:
+        items_d.append(i)
+    
+    items_selected = []
+
+    for i in items_d:
+        if arg1 in i.url:
+            items_selected.append(i)
+
+    item1 = items_selected[0]
 
     # title
     item1.title
@@ -106,11 +124,6 @@ async def vinted_search(ctx, price: int):
     # currency
     item1.currency
 
-    # Getting all the 10 items into a list
-    items_d = []
-    for i in items:
-        items_d.append(i)
-
 
     # Reply
     value = random.randint(0, 0xffffff)
@@ -123,7 +136,6 @@ async def vinted_search(ctx, price: int):
     info.add_field(name=f"Marque", value=f"{item1.brand_title}")
     info.add_field(name=f"Prix", value=f"{item1.price}€")
     info.set_footer(text=f'ID du produit : {item1.id}')
-    
     await ctx.respond(embed=info)
 
 token = open("token.txt", "r")
