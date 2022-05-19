@@ -72,7 +72,7 @@ async def bot_info(ctx):
 
 @client.slash_command(
     name = "vinted",
-    description= "Search on Vinted.",
+    description= "Search on Vinted. (A test command yet)",
     guild_ids = [960288719871569961]
 )
 async def vinted_search(ctx, price: int):
@@ -80,7 +80,7 @@ async def vinted_search(ctx, price: int):
     page = 1
 
     # search (url, number of items, page_number)
-    items = vinted.items.search("https://www.vinted.fr/femmes?order=newest_first&price_to=9999&currency=EUR", 10, 1)
+    items = vinted.items.search("https://www.vinted.fr/hommes?order=newest_first&price_to=9999&currency=EUR", number_of_items, page)
 
     # returns a list of objects : item
     item1 = items[0]
@@ -115,14 +115,14 @@ async def vinted_search(ctx, price: int):
     # Reply
     value = random.randint(0, 0xffffff)
 
-    info = discord.Embed(
-    colour = value
+    info = discord.Embed(title=item1.title, url=item1.url, colour = value
     )
 
-    info.set_author(name="Vinted Results")
+    #info.set_author(name=item1.brand_title)
     info.set_thumbnail(url=item1.photo)
-    info.add_field(name="Item title", value=item1.title)
-    info.set_footer(text=f'Requested by {ctx.author}')
+    info.add_field(name=f"Marque", value=f"{item1.brand_title}")
+    info.add_field(name=f"Prix", value=f"{item1.price}€")
+    info.set_footer(text=f'ID du produit : {item1.id}')
     
     await ctx.respond(embed=info)
 
