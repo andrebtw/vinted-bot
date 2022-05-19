@@ -10,6 +10,7 @@ import datetime
 import random
 import time
 import os
+import asyncio
 import json
 import requests
 from re import I
@@ -77,66 +78,43 @@ async def bot_info(ctx):
     guild_ids = [960288719871569961]
 )
 async def vinted_search(
-                            ctx,
-                            price: Option(int, "Le prix maximum", required = False, default = 500),
-                            arg1: Option(str, "Option 1", required = False, default=""),
-                            arg2: Option(str, "Option 2", required = False, default="")
-                        ):
-    number_of_items = 40
-    page = 1
+    ctx,
+    arg1: Option(str, "Option 1", required = False, default=""),
+    arg2: Option(str, "Option 2", required = False, default="")
+    ):
+    running = True
+    price = 9999
+    while running:
+        number_of_items = 200
+        page = 1
+        items = vinted.items.search(f"https://www.vinted.fr/?order=newest_first&price_to={price}&currency=EUR", number_of_items, page)
 
-    # search (url, number of items, page_number)
-    items = vinted.items.search(f"https://www.vinted.fr/?order=newest_first&price_to={price}&currency=EUR", number_of_items, page)
+        items_d = []
+        for i in items:
+            items_d.append(i)
+        
+        print(f"Items found : {len(items_d)}")
 
-    # returns a list of objects : item
+        a=0
 
-    # Getting all the 10 items into a list
-    items_d = []
-    for i in items:
-        items_d.append(i)
-    
-    items_selected = []
+        for i in items_d:
+            if (arg1 in i.url or (arg1 is None and arg2 is None)):
+                a=a+1
+                print(f"Items selected : {a}")
 
-    for i in items_d:
-        if arg1 in i.url:
-            items_selected.append(i)
-
-    item1 = items_selected[0]
-
-    # title
-    item1.title
-
-    # id
-    item1.id
-
-    # photo url
-    item1.photo
-
-    # brand title
-    item1.brand_title
-
-    # price
-    item1.price
-
-    # url
-    item1.url
-
-    # currency
-    item1.currency
-
-
-    # Reply
-    value = random.randint(0, 0xffffff)
-
-    info = discord.Embed(title=item1.title, url=item1.url, colour = value
-    )
-
-    #info.set_author(name=item1.brand_title)
-    info.set_thumbnail(url=item1.photo)
-    info.add_field(name=f"Marque", value=f"{item1.brand_title}")
-    info.add_field(name=f"Prix", value=f"{item1.price}€")
-    info.set_footer(text=f'ID du produit : {item1.id}')
-    await ctx.respond(embed=info)
+        for i in items_d:
+            try:
+                if (arg1 in i.url or (arg1 is None and arg2 is None)):
+                    value = random.randint(0, 0xffffff)
+                    info = discord.Embed(title=i.title, url=i.url, colour = value)
+                    info.set_thumbnail(url=i.photo)
+                    info.add_field(name=f"Marque", value=f"{i.brand_title}")
+                    info.add_field(name=f"Prix", value=f"{i.price}€")
+                    info.set_footer(text=f'ID du produit : {i.id}')
+                    await ctx.respond(embed=info)
+                    await asyncio.sleep(2)
+            except:
+                pass
 
 token = open("token.txt", "r")
 
