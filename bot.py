@@ -87,34 +87,41 @@ async def vinted_search(
     while running:
         number_of_items = 200
         page = 1
-        items = vinted.items.search(f"https://www.vinted.fr/?order=newest_first&price_to={price}&currency=EUR", number_of_items, page)
+        try:
+            items = vinted.items.search(f"https://www.vinted.fr/?order=newest_first&price_to={price}&currency=EUR", number_of_items, page)
+        except:
+            print("Bug d'API : la boucle continue.")
 
         items_d = []
         for i in items:
             items_d.append(i)
         
-        print(f"Items found : {len(items_d)}")
+        print(f"Articles trouvés : {len(items_d)}")
 
         a=0
 
         for i in items_d:
             if (arg1 in i.url or (arg1 is None and arg2 is None)):
                 a=a+1
-                print(f"Items selected : {a}")
+        
+        print(f"Articles sélectionés : {a}")
 
-        for i in items_d:
-            try:
-                if (arg1 in i.url or (arg1 is None and arg2 is None)):
-                    value = random.randint(0, 0xffffff)
-                    info = discord.Embed(title=i.title, url=i.url, colour = value)
-                    info.set_thumbnail(url=i.photo)
-                    info.add_field(name=f"Marque", value=f"{i.brand_title}")
-                    info.add_field(name=f"Prix", value=f"{i.price}€")
-                    info.set_footer(text=f'ID du produit : {i.id}')
-                    await ctx.respond(embed=info)
-                    await asyncio.sleep(2)
-            except:
-                pass
+        if a != 0:
+            for i in items_d:
+                try:
+                    if (arg1 in i.url or (arg1 is None and arg2 is None)):
+                        value = random.randint(0, 0xffffff)
+                        info = discord.Embed(title=i.title, url=i.url, colour = value)
+                        info.set_thumbnail(url=i.photo)
+                        info.add_field(name=f"Marque", value=f"{i.brand_title}")
+                        info.add_field(name=f"Prix", value=f"{i.price}€")
+                        info.set_footer(text=f'ID du produit : {i.id}')
+                        await ctx.respond(embed=info)
+                        await asyncio.sleep(2)
+                except:
+                    pass
+        else:
+            print("Aucun article sélectionés.")
 
 token = open("token.txt", "r")
 
